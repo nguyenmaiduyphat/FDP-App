@@ -174,7 +174,7 @@ class _LayoutPageState extends State<LayoutPage>
 
     switch (index) {
       case 0:
-        return MusicMainPage();
+        return MusicMainPage(showMiniPlayer: false, indexSong: 0,);
       case 1:
         return MusicCategoryPage();
       case 2:

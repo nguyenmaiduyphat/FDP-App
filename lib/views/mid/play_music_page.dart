@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:ui';
+import 'package:fdp_app/views/main/layout_page.dart';
+import 'package:fdp_app/views/main/music_main_page.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 
 class PlayMusicPage extends StatefulWidget {
-  final VoidCallback onCollapse;
-  const PlayMusicPage({super.key, required this.onCollapse});
+  late int index = 0;
+  PlayMusicPage({super.key, required this.index});
 
   @override
   State<PlayMusicPage> createState() => _PlayMusicPageState();
@@ -19,6 +21,11 @@ class _PlayMusicPageState extends State<PlayMusicPage> {
   Duration _duration = Duration.zero;
   Duration _position = Duration.zero;
   bool isPlaying = false;
+  List<String> imageUrls = [
+    "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+    "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+    "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+  ];
 
   @override
   void initState() {
@@ -28,9 +35,7 @@ class _PlayMusicPageState extends State<PlayMusicPage> {
 
   Future<void> _initPlayer() async {
     try {
-      await _audioPlayer.setUrl(
-        'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-      );
+      await _audioPlayer.setUrl(imageUrls[widget.index]);
       _duration = _audioPlayer.duration ?? Duration.zero;
 
       _positionSub = _audioPlayer.positionStream.listen((pos) {
@@ -97,7 +102,17 @@ class _PlayMusicPageState extends State<PlayMusicPage> {
                               Icons.keyboard_arrow_down,
                               color: Colors.white,
                             ),
-                            onPressed: widget.onCollapse,
+                            onPressed: () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => MusicMainPage(
+                                    showMiniPlayer: true,
+                                    indexSong: widget.index,
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                           const Spacer(),
                           const Text(
@@ -195,7 +210,12 @@ class _PlayMusicPageState extends State<PlayMusicPage> {
                               color: Colors.white,
                             ),
                             iconSize: 40,
-                            onPressed: () {},
+                            onPressed: () {
+                              widget.index--;
+                              if (widget.index < 0) {
+                                widget.index = imageUrls.length - 1;
+                              }
+                            },
                           ),
                           GestureDetector(
                             onTap: () async {
@@ -225,7 +245,14 @@ class _PlayMusicPageState extends State<PlayMusicPage> {
                               color: Colors.white,
                             ),
                             iconSize: 40,
-                            onPressed: () {},
+                            onPressed: () {
+                              setState(() {
+                                widget.index++;
+                                if (widget.index > imageUrls.length - 1) {
+                                  widget.index = 0;
+                                }
+                              });
+                            },
                           ),
                         ],
                       ),
