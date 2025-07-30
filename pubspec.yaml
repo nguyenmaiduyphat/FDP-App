@@ -39,6 +39,14 @@ dependencies:
   lottie: ^3.3.1
   intl: ^0.20.2
   auto_animated: ^3.2.0
+  firebase_core: ^4.0.0
+  firebase_auth: ^6.0.0
+  google_sign_in: ^7.1.1
+  animated_background: ^2.0.0
+  just_audio: ^0.10.4
+  audio_service: ^0.18.18
+  get_it: ^8.0.3
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
   flutter_test:
@@ -53,6 +61,26 @@ dev_dependencies:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/song/default.png" # Đường dẫn đến logo của bạn
+  min_sdk_android: 21
+  remove_alpha_ios: true
+  background_color_ios: "#ffffff"
+  web:
+    generate: true
+    image_path: "assets/song/default.png"
+    background_color: "#hexcode"
+    theme_color: "#hexcode"
+  windows:
+    generate: true
+    image_path: "assets/song/default.png"
+    icon_size: 48 # min:48, max:256, default: 48
+  macos:
+    generate: true
+    image_path: "assets/song/default.png"
 
 # The following section is specific to Flutter packages.
 flutter:

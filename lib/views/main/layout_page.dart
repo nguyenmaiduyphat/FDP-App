@@ -1,6 +1,8 @@
 import 'dart:ui';
 
+import 'package:fdp_app/views/main/category_music_page.dart';
 import 'package:fdp_app/views/main/music_main_page.dart';
+import 'package:fdp_app/views/main/profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
@@ -80,8 +82,8 @@ class _LayoutPageState extends State<LayoutPage>
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             SizedBox(
-                              width: 48,
-                              height: 48,
+                              width: 40,
+                              height: 40,
                               child: Lottie.asset(
                                 'assets/animation/macos - Apple Music icon.json',
                                 repeat: true,
@@ -89,16 +91,16 @@ class _LayoutPageState extends State<LayoutPage>
                             ),
                             const SizedBox(width: 10),
                             Text(
-                              "FDP",
+                              "FDP Music",
                               style: GoogleFonts.dancingScript(
-                                fontSize: 30,
+                                fontSize: 22,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 8),
                         // Search bar
                         Container(
                           decoration: BoxDecoration(
@@ -174,9 +176,9 @@ class _LayoutPageState extends State<LayoutPage>
       case 0:
         return MusicMainPage();
       case 1:
-        return Text("Music / Recycle Screen", style: style);
+        return MusicCategoryPage();
       case 2:
-        return Text("Profile", style: style);
+        return ProfilePage();
       default:
         return Text("Unknown Page", style: style);
     }
