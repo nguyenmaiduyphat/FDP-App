@@ -5,6 +5,8 @@ import 'package:fdp_app/utils/music_player_controller.dart';
 import 'package:fdp_app/views/main/category_music_page.dart';
 import 'package:fdp_app/views/main/music_main_page.dart';
 import 'package:fdp_app/views/main/profile_page.dart';
+import 'package:fdp_app/views/mid/play_music_page.dart';
+import 'package:fdp_app/views/mid/song_list_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:just_audio/just_audio.dart';
@@ -119,9 +121,17 @@ class _LayoutPageState extends State<LayoutPage>
                               borderRadius: BorderRadius.circular(30),
                             ),
                             padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: const TextField(
-                              style: TextStyle(color: Colors.white),
-                              decoration: InputDecoration(
+                            child: TextField(
+                              onSubmitted: (value) {
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => SongListPage(),
+                                  ),
+                                );
+                              },
+                              style: const TextStyle(color: Colors.white),
+                              decoration: const InputDecoration(
                                 icon: Icon(Icons.search, color: Colors.white70),
                                 hintText: "Nhập bài hát của bạn...",
                                 hintStyle: TextStyle(
@@ -142,48 +152,80 @@ class _LayoutPageState extends State<LayoutPage>
                     if (controller.currentSong.isNotEmpty)
                       Miniplayer(
                         controller: controller.miniplayerController,
-                        minHeight: 70,
-                        maxHeight: 370,
+                        minHeight: 50,
+                        maxHeight: 350,
                         curve: Curves.easeInOut,
                         duration: const Duration(milliseconds: 300),
                         builder: (height, percentage) {
-                          return Container(
-                            color: Colors.black87,
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            child: Row(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.network(
-                                    controller.currentImage,
-                                    width: 50,
-                                    height: 50,
-                                    fit: BoxFit.cover,
+                          return Dismissible(
+                            key: const Key("miniplayer"),
+                            direction: DismissDirection
+                                .endToStart, // swipe từ phải qua trái
+                            onDismissed: (direction) {
+                              controller.stop();
+                              controller.setSong('', '', '');
+                            },
+                            background: Container(
+                              alignment: Alignment.centerRight,
+                              padding: const EdgeInsets.only(right: 20),
+                              color: Colors.red,
+                              child: const Icon(
+                                Icons.delete,
+                                color: Colors.white,
+                              ),
+                            ),
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const PlayMusicPage(),
                                   ),
+                                );
+                              },
+                              child: Container(
+                                color: const Color.fromARGB(221, 59, 99, 93),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
                                 ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    controller.currentSong,
-                                    style: const TextStyle(color: Colors.white),
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                  ),
+                                child: Row(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.network(
+                                        controller.currentImage,
+                                        width: 50,
+                                        height: 50,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        controller.currentSong,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    GestureDetector(
+                                      onTap: () async {
+                                        await controller.togglePlayPause();
+                                      },
+                                      child: Icon(
+                                        controller.isPlaying
+                                            ? Icons.pause
+                                            : Icons.play_arrow,
+                                        color: Colors.white,
+                                        size: 28,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: 10),
-                                IconButton(
-                                  icon: Icon(
-                                    controller.isPlaying
-                                        ? Icons.pause
-                                        : Icons.play_arrow,
-                                    color: Colors.white,
-                                    size: 28,
-                                  ),
-                                  onPressed: () async {
-                                    await controller.togglePlayPause();
-                                  },
-                                ),
-                              ],
+                              ),
                             ),
                           );
                         },
