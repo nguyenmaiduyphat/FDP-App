@@ -1,11 +1,16 @@
+import 'package:fdp_app/utils/music_player_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fdp_app/views/main/layout_page.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  // WidgetsFlutterBinding.ensureInitialized();
-  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => MusicPlayerController(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

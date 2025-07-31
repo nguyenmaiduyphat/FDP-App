@@ -47,6 +47,9 @@ dependencies:
   audio_service: ^0.18.18
   get_it: ^8.0.3
   flutter_launcher_icons: ^0.14.4
+  miniplayer: ^1.0.1
+  provider: ^6.1.5
+  audioplayers: ^6.5.0
 
 dev_dependencies:
   flutter_test:

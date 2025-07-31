@@ -1,11 +1,16 @@
+import 'dart:async';
 import 'dart:ui';
 
+import 'package:fdp_app/utils/music_player_controller.dart';
 import 'package:fdp_app/views/main/category_music_page.dart';
 import 'package:fdp_app/views/main/music_main_page.dart';
 import 'package:fdp_app/views/main/profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:lottie/lottie.dart';
+import 'package:miniplayer/miniplayer.dart';
+import 'package:provider/provider.dart';
 import 'package:water_drop_nav_bar/water_drop_nav_bar.dart';
 
 class LayoutPage extends StatefulWidget {
@@ -31,13 +36,13 @@ class _LayoutPageState extends State<LayoutPage>
     )..repeat(reverse: true);
 
     _gradient1 = ColorTween(
-      begin: const Color(0xFF1A2980), // Deep blue
-      end: const Color(0xFF26D0CE), // Teal
+      begin: const Color(0xFF1A2980),
+      end: const Color(0xFF26D0CE),
     ).animate(_controller);
 
     _gradient2 = ColorTween(
-      begin: const Color(0xFF6A82FB), // Purple
-      end: const Color(0xFFFC5C7D), // Pink-red
+      begin: const Color(0xFF6A82FB),
+      end: const Color(0xFFFC5C7D),
     ).animate(_controller);
   }
 
@@ -49,96 +54,153 @@ class _LayoutPageState extends State<LayoutPage>
 
   @override
   Widget build(BuildContext context) {
+    final controller = Provider.of<MusicPlayerController>(context);
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, _) {
         return Scaffold(
           extendBody: true,
           backgroundColor: Colors.black,
-          body: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  _gradient1.value ?? Colors.black,
-                  _gradient2.value ?? Colors.black,
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            child: SafeArea(
-              child: Column(
-                children: [
-                  // ----------- HEADER -----------
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 20,
-                    ),
-                    child: Column(
-                      children: [
-                        // Logo + Name
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: 40,
-                              height: 40,
-                              child: Lottie.asset(
-                                'assets/animation/macos - Apple Music icon.json',
-                                repeat: true,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Text(
-                              "FDP Music",
-                              style: GoogleFonts.dancingScript(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        // Search bar
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: const TextField(
-                            style: TextStyle(color: Colors.white),
-                            decoration: InputDecoration(
-                              icon: Icon(Icons.search, color: Colors.white70),
-                              hintText: "Nhập bài hát của bạn...",
-                              hintStyle: TextStyle(
-                                color: Colors.white54,
-                                fontSize: 14,
-                              ),
-                              border: InputBorder.none,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+          body: Stack(
+            children: [
+              // Background gradient
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      _gradient1.value ?? Colors.black,
+                      _gradient2.value ?? Colors.black,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-
-                  // ----------- BODY -----------
-                  Expanded(child: Center(child: _buildPage(selectedIndex))),
-                ],
+                ),
               ),
-            ),
+              // Main content
+              SafeArea(
+                child: Column(
+                  children: [
+                    // ----------- HEADER -----------
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 20,
+                      ),
+                      child: Column(
+                        children: [
+                          // Logo + Name
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 40,
+                                height: 40,
+                                child: Lottie.asset(
+                                  'assets/animation/macos - Apple Music icon.json',
+                                  repeat: true,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                "FDP Music",
+                                style: GoogleFonts.dancingScript(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          // Search bar
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: const TextField(
+                              style: TextStyle(color: Colors.white),
+                              decoration: InputDecoration(
+                                icon: Icon(Icons.search, color: Colors.white70),
+                                hintText: "Nhập bài hát của bạn...",
+                                hintStyle: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 14,
+                                ),
+                                border: InputBorder.none,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // ----------- BODY -----------
+                    Expanded(child: Center(child: _buildPage(selectedIndex))),
+                    // ✅ MiniPlayer được đặt ở đây
+                    if (controller.currentSong.isNotEmpty)
+                      Miniplayer(
+                        controller: controller.miniplayerController,
+                        minHeight: 70,
+                        maxHeight: 370,
+                        curve: Curves.easeInOut,
+                        duration: const Duration(milliseconds: 300),
+                        builder: (height, percentage) {
+                          return Container(
+                            color: Colors.black87,
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Row(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.network(
+                                    controller.currentImage,
+                                    width: 50,
+                                    height: 50,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    controller.currentSong,
+                                    style: const TextStyle(color: Colors.white),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                IconButton(
+                                  icon: Icon(
+                                    controller.isPlaying
+                                        ? Icons.pause
+                                        : Icons.play_arrow,
+                                    color: Colors.white,
+                                    size: 28,
+                                  ),
+                                  onPressed: () async {
+                                    await controller.togglePlayPause();
+                                  },
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                  ],
+                ),
+              ),
+            ],
           ),
 
           // ----------- FOOTER -----------
           bottomNavigationBar: WaterDropNavBar(
             bottomPadding: 20,
-            backgroundColor: const Color(0xFF22252A), // Elegant charcoal
-            waterDropColor: const Color(0xFF5D9CEC), // Soft sky blue accent
-            inactiveIconColor: Colors.white70, // Subtle faded icons
-            iconSize: 28, // Default icon size
+            backgroundColor: const Color(0xFF22252A),
+            waterDropColor: const Color(0xFF5D9CEC),
+            inactiveIconColor: Colors.white70,
+            iconSize: 28,
             selectedIndex: selectedIndex,
             onItemSelected: (index) {
               setState(() {
@@ -174,7 +236,7 @@ class _LayoutPageState extends State<LayoutPage>
 
     switch (index) {
       case 0:
-        return MusicMainPage(showMiniPlayer: false, indexSong: 0,);
+        return MusicMainPage();
       case 1:
         return MusicCategoryPage();
       case 2:

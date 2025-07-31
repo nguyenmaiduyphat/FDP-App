@@ -1,77 +1,67 @@
 import 'dart:async';
 import 'dart:ui';
-import 'package:fdp_app/views/main/layout_page.dart';
-import 'package:fdp_app/views/main/music_main_page.dart';
+import 'package:fdp_app/utils/music_player_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:provider/provider.dart';
 
 class PlayMusicPage extends StatefulWidget {
-  late int index = 0;
-  PlayMusicPage({super.key, required this.index});
+  const PlayMusicPage({super.key});
 
   @override
   State<PlayMusicPage> createState() => _PlayMusicPageState();
 }
 
 class _PlayMusicPageState extends State<PlayMusicPage> {
-  final AudioPlayer _audioPlayer = AudioPlayer();
-  late StreamSubscription<Duration> _positionSub;
-  late StreamSubscription<PlayerState> _playerStateSub;
-
   Duration _duration = Duration.zero;
   Duration _position = Duration.zero;
-  bool isPlaying = false;
-  List<String> imageUrls = [
-    "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-    "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
-    "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
-  ];
+
+  // Mock data
+  final String currentSongTitle = 'SoundHelix Track 1';
+  final String currentArtist = 'SoundHelix';
+  final String currentSongImage =
+      'https://images.unsplash.com/photo-1511376777868-611b54f68947?fit=crop&w=600&q=80';
+  final String audioUrl =
+      'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
 
   @override
   void initState() {
     super.initState();
-    _initPlayer();
-  }
+    final controller = Provider.of<MusicPlayerController>(
+      context,
+      listen: false,
+    );
 
-  Future<void> _initPlayer() async {
-    try {
-      await _audioPlayer.setUrl(imageUrls[widget.index]);
-      _duration = _audioPlayer.duration ?? Duration.zero;
+    // Cập nhật thời gian
+    controller.audioPlayer.durationStream.listen((d) {
+      if (d != null) {
+        setState(() {
+          _duration = d;
+        });
+      }
+    });
 
-      _positionSub = _audioPlayer.positionStream.listen((pos) {
-        setState(() => _position = pos);
+    controller.audioPlayer.positionStream.listen((p) {
+      setState(() {
+        _position = p;
       });
-
-      _playerStateSub = _audioPlayer.playerStateStream.listen((state) {
-        setState(() => isPlaying = state.playing);
-      });
-    } catch (e) {
-      print("Error loading audio: $e");
-    }
-  }
-
-  @override
-  void dispose() {
-    _audioPlayer.dispose();
-    _positionSub.cancel();
-    _playerStateSub.cancel();
-    super.dispose();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
+    final controller = Provider.of<MusicPlayerController>(
+      context,
+      listen: false,
+    );
     return Scaffold(
       body: Stack(
         children: [
           // Blurred background
           Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               image: DecorationImage(
-                image: NetworkImage(
-                  'https://images.unsplash.com/photo-1487215078519-e21cc028cb29?fit=crop&w=800&q=80',
-                ),
+                image: NetworkImage(currentSongImage),
                 fit: BoxFit.cover,
               ),
             ),
@@ -103,15 +93,14 @@ class _PlayMusicPageState extends State<PlayMusicPage> {
                               color: Colors.white,
                             ),
                             onPressed: () {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => MusicMainPage(
-                                    showMiniPlayer: true,
-                                    indexSong: widget.index,
-                                  ),
-                                ),
-                              );
+                              setState(() {
+                                controller.setSong(
+                                  currentSongTitle,
+                                  currentSongImage,
+                                  audioUrl,
+                                );
+                              });
+                              Navigator.pop(context);
                             },
                           ),
                           const Spacer(),
@@ -133,10 +122,8 @@ class _PlayMusicPageState extends State<PlayMusicPage> {
                           width: imageSize,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(20),
-                            image: const DecorationImage(
-                              image: NetworkImage(
-                                'https://images.unsplash.com/photo-1511376777868-611b54f68947?fit=crop&w=600&q=80',
-                              ),
+                            image: DecorationImage(
+                              image: NetworkImage(currentSongImage),
                               fit: BoxFit.cover,
                             ),
                             boxShadow: const [
@@ -152,9 +139,9 @@ class _PlayMusicPageState extends State<PlayMusicPage> {
 
                       const SizedBox(height: 30),
 
-                      const Text(
-                        'SoundHelix Track 1',
-                        style: TextStyle(
+                      Text(
+                        currentSongTitle,
+                        style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -162,9 +149,12 @@ class _PlayMusicPageState extends State<PlayMusicPage> {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 8),
-                      const Text(
-                        'SoundHelix',
-                        style: TextStyle(fontSize: 16, color: Colors.white70),
+                      Text(
+                        currentArtist,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.white70,
+                        ),
                         textAlign: TextAlign.center,
                       ),
 
@@ -179,7 +169,7 @@ class _PlayMusicPageState extends State<PlayMusicPage> {
                         activeColor: Colors.white,
                         inactiveColor: Colors.white30,
                         onChanged: (value) async {
-                          await _audioPlayer.seek(
+                          await controller.audioPlayer.seek(
                             Duration(seconds: value.toInt()),
                           );
                         },
@@ -210,19 +200,14 @@ class _PlayMusicPageState extends State<PlayMusicPage> {
                               color: Colors.white,
                             ),
                             iconSize: 40,
-                            onPressed: () {
-                              widget.index--;
-                              if (widget.index < 0) {
-                                widget.index = imageUrls.length - 1;
-                              }
-                            },
+                            onPressed: () {},
                           ),
                           GestureDetector(
                             onTap: () async {
-                              if (_audioPlayer.playing) {
-                                await _audioPlayer.pause();
+                              if (controller.isPlaying) {
+                                controller.stop();
                               } else {
-                                await _audioPlayer.play();
+                                await controller.play(audioUrl);
                               }
                             },
                             child: Container(
@@ -233,7 +218,9 @@ class _PlayMusicPageState extends State<PlayMusicPage> {
                                 color: Colors.white,
                               ),
                               child: Icon(
-                                isPlaying ? Icons.pause : Icons.play_arrow,
+                                controller.isPlaying
+                                    ? Icons.pause
+                                    : Icons.play_arrow,
                                 size: 40,
                                 color: Colors.black,
                               ),
@@ -245,14 +232,7 @@ class _PlayMusicPageState extends State<PlayMusicPage> {
                               color: Colors.white,
                             ),
                             iconSize: 40,
-                            onPressed: () {
-                              setState(() {
-                                widget.index++;
-                                if (widget.index > imageUrls.length - 1) {
-                                  widget.index = 0;
-                                }
-                              });
-                            },
+                            onPressed: () {},
                           ),
                         ],
                       ),

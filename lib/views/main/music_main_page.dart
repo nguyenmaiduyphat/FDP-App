@@ -1,20 +1,14 @@
 import 'dart:ui';
 
 import 'package:auto_animated/auto_animated.dart';
-import 'package:fdp_app/components/miniplayer.dart';
 import 'package:fdp_app/models/musicitem%20.dart';
 import 'package:fdp_app/views/mid/play_music_page.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:miniplayer/miniplayer.dart';
 
 class MusicMainPage extends StatefulWidget {
-  late bool showMiniPlayer = true;
-  late int indexSong = 0;
-  MusicMainPage({
-    super.key,
-    required this.showMiniPlayer,
-    required this.indexSong,
-  });
+  MusicMainPage({super.key});
 
   @override
   State<MusicMainPage> createState() => _MusicMainPageState();
@@ -477,72 +471,18 @@ class _MusicMainPageState extends State<MusicMainPage>
             SectionTitle(title: '🎧 Playlist Popular'),
             GridPlaylistSection(items: popularPlaylists),
             SectionTitle(title: '🔥 Top Ranked Playlists'),
-            HorizontalListSection(
-              items: topRankedPlaylists,
-              isSong: false,
-              showMiniPlayer: widget.showMiniPlayer,
-              indexSong: widget.indexSong,
-            ),
+            HorizontalListSection(items: topRankedPlaylists, isSong: false),
             SectionTitle(title: '🆕 New Songs'),
-            HorizontalListSection(
-              items: newSongs,
-              isSong: true,
-              showMiniPlayer: widget.showMiniPlayer,
-              indexSong: widget.indexSong,
-            ),
+            HorizontalListSection(items: newSongs, isSong: true),
             SectionTitle(
               title:
                   '🌟 Recommended songs — ${DateFormat.yMMMMd().format(DateTime.now())}',
             ),
-            HorizontalListSection(
-              items: recommendedSongs,
-              isSong: true,
-              showMiniPlayer: widget.showMiniPlayer,
-              indexSong: widget.indexSong,
-            ),
+            HorizontalListSection(items: recommendedSongs, isSong: true),
             SectionTitle(title: '🏆 Playlist Top 50 songs'),
-            HorizontalListSection(
-              items: top50Songs,
-              isSong: false,
-              showMiniPlayer: widget.showMiniPlayer,
-              indexSong: widget.indexSong,
-            ),
+            HorizontalListSection(items: top50Songs, isSong: false),
             SectionTitle(title: '🎬 Albums'),
-            HorizontalListSection(
-              items: albums,
-              isSong: false,
-              showMiniPlayer: widget.showMiniPlayer,
-              indexSong: widget.indexSong,
-            ),
-
-            // MiniPlayer phía trên bottom nav
-            if (widget.showMiniPlayer)
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: MiniPlayer(
-                  songName: currentSong,
-                  imageUrl: imageUrls[widget.indexSong],
-                  currentTime: currentTime,
-                  isPlaying: isPlaying,
-                  onPlayPause: () {
-                    setState(() {
-                      isPlaying = !isPlaying;
-                    });
-                  },
-                  onNext: () {},
-                  onPrevious: () {},
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            PlayMusicPage(index: widget.indexSong),
-                      ),
-                    );
-                    setState(() => widget.showMiniPlayer = false);
-                  },
-                ),
-              ),
+            HorizontalListSection(items: albums, isSong: false),
           ],
         ),
       ),
@@ -669,16 +609,8 @@ class _GridPlaylistSectionState extends State<GridPlaylistSection> {
 class HorizontalListSection extends StatefulWidget {
   final List<MusicItem> items;
   final bool isSong;
-  late bool showMiniPlayer;
-  late int indexSong;
 
-  HorizontalListSection({
-    required this.items,
-    super.key,
-    required this.isSong,
-    required this.showMiniPlayer,
-    required this.indexSong,
-  });
+  HorizontalListSection({required this.items, super.key, required this.isSong});
 
   @override
   State<HorizontalListSection> createState() => _HorizontalListSectionState();
@@ -716,13 +648,9 @@ class _HorizontalListSectionState extends State<HorizontalListSection> {
                     return;
                   }
 
-                  setState(() => widget.showMiniPlayer = false);
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          PlayMusicPage(index: widget.indexSong),
-                    ),
+                    MaterialPageRoute(builder: (context) => PlayMusicPage()),
                   );
                 },
               ),
